@@ -1,7 +1,10 @@
 "use server"
 import prisma from "@/_dbConfig/dbConfig"
 import { validateForm } from "@/Utils/FormValidator"
+import { generateJsonWebToken } from "@/Utils/JsonWebToken"
 import bcrypt from "bcrypt"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import { z } from "zod"
 
 
@@ -59,12 +62,20 @@ export async function register(prevState: any, formData: FormData): Promise<Resp
             select: { id: true, name: true, email: true }
         });
 
-        return {
-            status: 201,
-            success: true,
-            data: newUser,
-            message: "User created successfully!"
-        };
+        (await cookies()).set("auth-token", generateJsonWebToken({ data: { id: newUser.id, email: newUser.email, role: "user" } }), {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+        })
+
+        // return {
+        //     status: 201,
+        //     success: true,
+        //     data: newUser,
+        //     message: "User created successfully!"
+        // };
 
     } catch (error) {
         console.error("Registration Error:", error);
@@ -74,4 +85,6 @@ export async function register(prevState: any, formData: FormData): Promise<Resp
             message: "An internal server error occurred. Please try again later."
         };
     }
+
+    redirect("/dashboard")
 }
