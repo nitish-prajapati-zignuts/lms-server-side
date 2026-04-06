@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
+  //output   = "../generated/prisma"
 }
 
 datasource db {
@@ -20,14 +20,14 @@ enum ROLE_BASED_USER {
 }
 
 model Registration {
-  id        String   @id @default(cuid())
+  id        String          @id @default(cuid())
   name      String
-  email     String   @unique
+  email     String          @unique
   password  String
-  createdAt DateTime @default(now())
+  createdAt DateTime        @default(now())
   role      ROLE_BASED_USER @default(USER)
-  updatedAt DateTime @updatedAt
-  isDeleted Boolean @default(false)
+  updatedAt DateTime        @updatedAt
+  isDeleted Boolean         @default(false)
 }
 
 // model Profile {
