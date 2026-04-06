@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "ROLE_BASED_USER" AS ENUM ('ADMIN', 'USER');
+
+-- AlterTable
+ALTER TABLE "Registration" ADD COLUMN     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "role" "ROLE_BASED_USER" NOT NULL DEFAULT 'USER';
