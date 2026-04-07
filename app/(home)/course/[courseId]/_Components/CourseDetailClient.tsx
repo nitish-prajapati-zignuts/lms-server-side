@@ -73,7 +73,7 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
                 className="w-full h-64 lg:h-full object-cover"
               />
             ) : (
-              <div className="w-full h-64 lg:h-full bg-gradient-to-br from-amber-50 via-stone-100 to-stone-200 flex flex-col items-center justify-center gap-3">
+              <div className="w-full h-64 lg:h-full bg-linear-to-br from-amber-50 via-stone-100 to-stone-200 flex flex-col items-center justify-center gap-3">
                 <div className="h-16 w-16 rounded-2xl bg-white/70 backdrop-blur-sm flex items-center justify-center shadow-sm">
                   <ImageIcon className="h-8 w-8 text-amber-400" />
                 </div>
@@ -169,14 +169,7 @@ export default function CourseDetailClient({ course }: CourseDetailClientProps) 
                 onClick={() => router.push(`/create-course/${course.id}/edit`)}
               >
                 <Pencil className="h-4 w-4 mr-2" />
-                Edit Course
-              </Button>
-              <Button
-                variant="outline"
-                className="rounded-2xl px-6 h-11 font-semibold border-stone-200 text-stone-600 hover:bg-stone-50 transition-all duration-200"
-                onClick={() => router.back()}
-              >
-                Back
+               Add Module
               </Button>
             </div>
           </div>
