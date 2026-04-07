@@ -14,7 +14,7 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 
-import { Home, Users, Settings, LogOut, LucideIcon, Plus, Library } from "lucide-react"
+import { Home, Users, Settings, LogOut, LucideIcon, Plus, Library, Check } from "lucide-react"
 
 type NavItem = {
     title: string
@@ -27,6 +27,7 @@ const data: NavItem[] = [
     { title: "Users", href: "/users", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
     { title: "Create a Course", href: "/create-course", icon: Plus },
+    { title: "Manage Permissions", href: "/permissions", icon: Check }
 ]
 
 export function SidebarComponent() {

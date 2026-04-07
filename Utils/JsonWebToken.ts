@@ -12,6 +12,9 @@ type TokenData = {
     role: string
 }
 
+export type DecodeTokenPayload = JwtPayload & {
+    data?: TokenData
+}
 
 export const generateJsonWebToken = ({ data }: { data: TokenData }) => {
     try {
@@ -39,9 +42,8 @@ export const verifyJsonWebToken = ({ token }: { token: string }) => {
 
 export const decodeJsonWebToken = ({ token }: { token: string }) => {
     try {
-        const decodedToken = jwt.decode(token) as JwtPayload & {
-            data?: { id: string; email: string; role: string }
-        }
+        const decodedToken = jwt.decode(token) as DecodeTokenPayload
+
 
         if (!decodedToken) {
             throw new Error("Could not decode JSON Web Token")

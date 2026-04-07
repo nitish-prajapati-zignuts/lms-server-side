@@ -20,16 +20,45 @@ enum ROLE_BASED_USER {
 }
 
 model Registration {
-  id        String          @id @default(cuid())
-  name      String
-  email     String          @unique
-  password  String
-  createdAt DateTime        @default(now())
-  role      ROLE_BASED_USER @default(USER)
-  updatedAt DateTime        @updatedAt
-  isDeleted Boolean         @default(false)
-  sessions  Sessions[]
+  id          String          @id @default(cuid())
+  name        String
+  email       String          @unique
+  password    String
+  createdAt   DateTime        @default(now())
+  role        ROLE_BASED_USER @default(USER)
+  updatedAt   DateTime        @updatedAt
+  isDeleted   Boolean         @default(false)
+  roles       UserRole[]
+  sessions    Sessions[]
   enrollments Enrollment[]
+}
+
+model UserRole {
+  id     String       @id @default(cuid())
+  userId String
+  roleId String
+  user   Registration @relation(fields: [userId], references: [id])
+  role   Role         @relation(fields: [roleId], references: [id])
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  role        String           @unique
+  description String?
+  users       UserRole[]
+  permissions RolePermission[]
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+  role         Role?      @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([roleId, permissionId])
 }
 
 model Sessions {
@@ -58,6 +87,14 @@ model Course {
   enrollments Enrollment[]
 }
 
+model Permission {
+  id        String           @id @default(cuid())
+  action    String //view,create,update,delete,manage
+  subject   String //dashboard,users,courses,permissions,enrollments
+  createdAt DateTime         @default(now())
+  roles     RolePermission[]
+}
+
 model CourseContent {
   id        String   @id @default(cuid())
   courseId  String
@@ -69,13 +106,12 @@ model CourseContent {
 }
 
 model Enrollment {
-  id        String   @id @default(cuid())
-  userId    String
-  courseId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isDeleted Boolean  @default(false)
+  id           String       @id @default(cuid())
+  userId       String
+  courseId     String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  isDeleted    Boolean      @default(false)
   registration Registration @relation(fields: [userId], references: [id])
-  course Course @relation(fields: [courseId], references: [id])
+  course       Course       @relation(fields: [courseId], references: [id])
 }
-
