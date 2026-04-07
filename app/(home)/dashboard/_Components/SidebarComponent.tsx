@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -16,22 +17,25 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Home, Users, Settings, LogOut, LucideIcon, Plus } from "lucide-react"
+import { CreateCourseModal } from "./CreateCourseModal"
 
 type NavItem = {
     title: string
     href: string
     icon: LucideIcon
+    isModalAction?: boolean
 }
 
 const data: NavItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: Home },
     { title: "Users", href: "/users", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
-    { title: "Create a Course", href: "/create-course", icon: Plus },
+    { title: "Create a Course", href: "#", icon: Plus, isModalAction: true },
 ]
 
 export function SidebarComponent() {
     const pathname = usePathname()
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
     return (
         <SidebarProvider>
@@ -55,19 +59,30 @@ export function SidebarComponent() {
                     <SidebarMenu>
                         {data.map((item) => {
                             const Icon = item.icon
-                            const isActive = pathname === item.href
+                            const isActive = pathname === item.href && !item.isModalAction
 
                             return (
                                 <SidebarMenuItem key={item.href}>
-                                    <SidebarMenuButton
-                                        asChild
-                                        isActive={isActive}
-                                    >
-                                        <Link href={item.href}>
+                                    {item.isModalAction ? (
+                                        <SidebarMenuButton
+                                            isActive={isActive}
+                                            onClick={() => setIsCreateModalOpen(true)}
+                                            className="w-full flex items-center"
+                                        >
                                             <Icon className="mr-2 h-4 w-4" />
                                             {item.title}
-                                        </Link>
-                                    </SidebarMenuButton>
+                                        </SidebarMenuButton>
+                                    ) : (
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={isActive}
+                                        >
+                                            <Link href={item.href}>
+                                                <Icon className="mr-2 h-4 w-4" />
+                                                {item.title}
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    )}
                                 </SidebarMenuItem>
                             )
                         })}
@@ -91,6 +106,11 @@ export function SidebarComponent() {
                     </SidebarMenu>
                 </SidebarFooter>
             </Sidebar>
+
+            <CreateCourseModal 
+                isOpen={isCreateModalOpen} 
+                onClose={() => setIsCreateModalOpen(false)} 
+            />
         </SidebarProvider>
     )
 }

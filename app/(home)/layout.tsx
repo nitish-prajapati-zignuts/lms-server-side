@@ -6,7 +6,7 @@ export default function HomeLayout({ children }: { children: React.ReactNode }) 
         <SidebarProvider>
             <div className="flex h-screen overflow-hidden">
                 <SidebarComponent />
-                <div className="flex-1 overflow-auto">
+                <div className="flex justify-center">
                     {children}
                 </div>
             </div>
