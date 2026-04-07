@@ -36,7 +36,7 @@ export const getDashboardData = withAuth(async ({ user }) => {
         }
     }
 
-   
+
 
     //if the User ==> User
     console.log("User from server action", user)

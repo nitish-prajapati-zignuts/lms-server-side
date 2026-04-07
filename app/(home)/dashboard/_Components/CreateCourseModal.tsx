@@ -13,8 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createCourse } from "../../create-course/_ServerActions/action";
-import { updateCourse } from "../../create-course/[courseId]/_ServerActions/action";
+import { createCourse } from "../../course/_ServerActions/action";
+import { updateCourse } from "../../course/[courseId]/_ServerActions/action";
 
 interface CreateCourseModalProps {
   isOpen: boolean;
@@ -73,7 +73,7 @@ export function CreateCourseModal({ isOpen, onClose }: CreateCourseModalProps) {
 
       if (result?.success) {
         onClose();
-        router.push(`/create-course/${courseId}`);
+        router.push(`/course/${courseId}`);
       } else {
         setErrorMessage(result?.message || "Something went wrong.");
       }
