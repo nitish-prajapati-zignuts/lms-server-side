@@ -2,19 +2,14 @@
 import prisma from "@/_dbConfig/dbConfig"
 import { validateForm } from "@/Utils/FormValidator"
 import { generateJsonWebToken } from "@/Utils/JsonWebToken"
+import { ResponseState } from "@/Utils/types"
 import bcrypt from "bcrypt"
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 
 
-export type ResponseState = {
-    success: boolean
-    status: number
-    data?: any
-    message: string
-    errors?: Record<string, string[]>
-}
+
 
 const registrationSchema = z.object({
     name: z.string().trim().min(3, "Name must be at least 3 characters long"),
@@ -62,12 +57,29 @@ export async function register(prevState: any, formData: FormData): Promise<Resp
             select: { id: true, name: true, email: true }
         });
 
-        (await cookies()).set("auth-token", generateJsonWebToken({ data: { id: newUser.id, email: newUser.email, role: "user" } }), {
+        const token = generateJsonWebToken({ data: { id: newUser.id, email: newUser.email, role: "user" } }) as string
+
+        (await cookies()).set("auth-token", token, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
             maxAge: 60 * 60 * 24 * 7,
             path: "/",
+        })
+
+
+        const ipAddress = (await headers()).get("x-forwarded-for") || ""
+        const userAgent = (await headers()).get("user-agent") || ""
+        const os = (await headers()).get("sec-ch-ua-platform") || ""
+
+        const createSessions = await prisma.sessions.create({
+            data: {
+                userId: newUser.id,
+                token: token,
+                ipAddress: "",
+                userAgent: "",
+                os: "",
+            }
         })
 
         // return {

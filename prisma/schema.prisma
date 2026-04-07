@@ -28,6 +28,20 @@ model Registration {
   role      ROLE_BASED_USER @default(USER)
   updatedAt DateTime        @updatedAt
   isDeleted Boolean         @default(false)
+  sessions  Sessions[]
+}
+
+model Sessions {
+  id           String       @id @default(cuid())
+  userId       String
+  token        String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  isDeleted    Boolean      @default(false)
+  ipAddress    String?
+  userAgent    String?
+  os           String?
+  registration Registration @relation(fields: [userId], references: [id])
 }
 
 // model Profile {
