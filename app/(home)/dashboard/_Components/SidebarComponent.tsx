@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -20,13 +21,14 @@ type NavItem = {
     title: string
     href: string
     icon: LucideIcon
+    isModalAction?: boolean
 }
 
 const data: NavItem[] = [
     { title: "Dashboard", href: "/dashboard", icon: Home },
     { title: "Users", href: "/users", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
-    { title: "Create a Course", href: "/create-course", icon: Plus },
+    { title: "Create a Course", href: "#", icon: Plus, isModalAction: true },
 ]
 
 export function SidebarComponent() {
