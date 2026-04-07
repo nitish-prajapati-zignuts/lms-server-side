@@ -12,7 +12,7 @@ export const withAuth = (fn: ActionFn) => {
     return async (prevState?: any, formData?: FormData) => {
         try {
             const token = (await cookies()).get("auth-token")?.value
-            console.log("Token from Cookies",token)
+            console.log("Token from Cookies", token)
             if (!token) {
                 redirect("/login")
             }
@@ -23,7 +23,7 @@ export const withAuth = (fn: ActionFn) => {
                 redirect("/login")
             }
 
-            console.log("Decoded Token",decodedToken)
+            console.log("Decoded Token", decodedToken)
 
             return await fn({
                 prevState,

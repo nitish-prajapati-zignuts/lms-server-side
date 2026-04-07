@@ -54,14 +54,16 @@ model Course {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   isDeleted   Boolean         @default(false)
-  contents    CourseContent[]
+  modules      Module[]
   enrollments Enrollment[]
 }
 
-model CourseContent {
+model Module {
   id        String   @id @default(cuid())
   courseId  String
-  content   String
+  title     String?
+  content   String?
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   isDeleted Boolean  @default(false)

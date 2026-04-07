@@ -4,4 +4,5 @@ export type ResponseState = {
     data?: any
     message: string
     errors?: Record<string, string[]>
+    courseId?: string
 }

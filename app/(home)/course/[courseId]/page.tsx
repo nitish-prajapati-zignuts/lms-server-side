@@ -11,13 +11,22 @@ export default async function CreateCoursePage({ params }: CreateCoursePageProps
 
   const course = await prisma.course.findUnique({
     where: { id: courseId },
+    include: {
+      modules: {
+        where: { isDeleted: false },
+        orderBy: { order: "asc" }
+      }
+    }
   });
 
   if (!course) notFound();
 
   return (
-    <div className="p-8">
-      <CourseDetailClient course={course} />
+    <div className="p-2">
+      <CourseDetailClient 
+        course={course} 
+        initialModules={course.modules}
+      />
     </div>
   );
 }
