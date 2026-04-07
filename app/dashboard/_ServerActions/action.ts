@@ -1,5 +1,9 @@
 import { withAuth } from "@/Utils/withAuth";
 
-export async function getDashboardData() {
-    return withAuth()
-}
+export const getDashboardData = withAuth(async ({ user }) => {
+    console.log("User from server action",user)
+    return {
+        message: "Hello from server action",
+        user
+    }
+})
