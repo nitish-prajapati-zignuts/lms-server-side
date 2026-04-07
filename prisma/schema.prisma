@@ -44,6 +44,27 @@ model Sessions {
   registration Registration @relation(fields: [userId], references: [id])
 }
 
+model Course {
+  id          String          @id @default(cuid())
+  title       String
+  description String
+  image       String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  isDeleted   Boolean         @default(false)
+  contents    CourseContent[]
+}
+
+model CourseContent {
+  id        String   @id @default(cuid())
+  courseId  String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  course    Course   @relation(fields: [courseId], references: [id])
+}
+
 // model Profile {
 //   id        String   @id @default(cuid())
 //   userId    String   @unique

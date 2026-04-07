@@ -20,9 +20,7 @@ export default function RegistrationClient() {
     })
 
     return (
-        /* Warm Creamy Background with Mesh Glows */
         <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-[#fafaf9]">
-            {/* Soft Yellowish Radial Glows */}
             <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-100/50 blur-[120px]" />
             <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-yellow-50/60 blur-[100px]" />
 
@@ -100,7 +98,6 @@ export default function RegistrationClient() {
                             </div>
                         )}
 
-                        {/* Warm Action Button */}
                         <Button
                             type="submit"
                             disabled={pending}
@@ -109,7 +106,6 @@ export default function RegistrationClient() {
                             {pending ? "Setting things up..." : "Create Account"}
                         </Button>
 
-                        {/* Footer */}
                         <p className="text-sm text-center text-stone-500 pt-2 font-medium">
                             Already have an account?{" "}
                             <span
