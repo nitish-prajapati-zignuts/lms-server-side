@@ -46,9 +46,10 @@ model Sessions {
 
 model Course {
   id          String          @id @default(cuid())
-  title       String
-  description String
+  title       String?
+  description String?
   image       String?
+  duration    Int?
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   isDeleted   Boolean         @default(false)
