@@ -44,7 +44,6 @@ const data: NavItem[] = [
     { title: "Users", href: "/users", icon: Users },
     { title: "Settings", href: "/settings", icon: Settings },
     { title: "Create a Course", href: "#", icon: Plus, isModalAction: true },
-    { title: "Create a Course", href: "/create-course", icon: Plus },
     { title: "Manage Permissions", href: "/permissions", icon: Check },
 ]
 
@@ -61,20 +60,13 @@ export function SidebarComponent() {
         status: null,
     })
 
-    // ✅ Handle success logout
+    // Handle logout state changes
     useEffect(() => {
-        if (logoutState?.success === true) {
-            toast.success("Successfully logged out")
-            router.push("/login")
+        if (logoutState?.success === false) {
+            toast.error(logoutState.message || "Failed to logout")
         }
-    }, [logoutState?.success, router])
+    }, [logoutState])
 
-    // ❌ Error handling
-    useEffect(() => {
-        if (logoutState?.status && logoutState.status !== 200) {
-            toast.error(logoutState.message)
-        }
-    }, [logoutState?.status])
 
     return (
         <>

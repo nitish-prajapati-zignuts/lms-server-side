@@ -25,7 +25,7 @@ export async function login(
       return {
         status: 400,
         success: false,
-        message: "",
+        message: "Validation failed",
         errors: validation.errors,
         data: validation.data
       };
@@ -33,12 +33,11 @@ export async function login(
 
     const { email, password } = validation.data;
 
-
     if (!email || !password) {
       return {
         success: false,
         status: 400,
-        message: "all Fields require",
+        message: "All fields are required",
       };
     }
 
@@ -56,40 +55,51 @@ export async function login(
       };
     }
 
-    console.log(user.id)
+    // 1. Verify password first
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return {
+        status: 401,
+        success: false,
+        message: "Wrong credentials",
+      };
+    }
 
-
-
-    //Get Sessions
-    const countSessions = await prisma.sessions.findMany({
+    // 2. Check active sessions count
+    const activeSessions = await prisma.sessions.findMany({
       where: {
         userId: user.id,
         isDeleted: false,
       },
-    })
+    });
 
-    if (countSessions.length > 3) {
+    if (activeSessions.length >= 3) {
       return {
         status: 400,
         success: false,
-        message: "You have too many sessions active.Please remove some sessions to continue.",
+        message: "Too many active sessions. Please logout from other devices.",
       };
     }
 
-    const token = generateJsonWebToken({ data: { id: user.id, email: user.email, role: user.role } }) as string
+    // 3. Generate token
+    const token = generateJsonWebToken({ 
+        data: { id: user.id, email: user.email, role: user.role } 
+    }) as string;
 
+    // 4. Set cookie with correct security settings for localhost
     (await cookies()).set("auth-token", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
+      maxAge: 60 * 60 * 24 * 7, // 7 days
       path: "/",
-    })
+    });
 
-    const ipAddress = (await headers()).get("x-forwarded-for") || ""
-    const userAgent = (await headers()).get("user-agent") || ""
-    const os = (await headers()).get("sec-ch-ua-platform") || ""
-
+    // 5. Create session entry
+    const headersList = await headers();
+    const ipAddress = headersList.get("x-forwarded-for") || "unknown";
+    const userAgent = headersList.get("user-agent") || "unknown";
+    const os = headersList.get("sec-ch-ua-platform") || "unknown";
 
     await prisma.sessions.create({
       data: {
@@ -99,34 +109,20 @@ export async function login(
         userAgent: userAgent,
         os: os,
       }
-    })
+    });
 
-    if (!user) {
-      return {
-        success: false,
-        status: 404,
-        message: "User not found",
-      };
+  } catch (error: any) {
+    if (error.message?.includes("NEXT_REDIRECT") || error.digest?.includes("NEXT_REDIRECT")) {
+        throw error;
     }
-
-    const encryptedPassword = await bcrypt.compare(password, user.password);
-
-    if (!encryptedPassword) {
-      return {
-        status: 401,
-        success: false,
-        message: "wrong credentials",
-      };
-    }
-  } catch (error) {
-    console.log(error);
+    console.error("Login Action Exception:", error);
     return {
-      status: 400,
+      status: 500,
       success: false,
-      data: "",
-      message: "Something went wrong!",
+      message: "An internal error occurred. Please try again later.",
     };
   }
 
   redirect("/dashboard");
 }
+

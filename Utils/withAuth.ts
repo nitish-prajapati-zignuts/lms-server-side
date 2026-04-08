@@ -1,6 +1,6 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { decodeJsonWebToken, DecodeTokenPayload } from "./JsonWebToken"
+import { verifyJsonWebToken } from "./JsonWebToken"
 import { hasPermission } from "./checkPermission"
 import { errorResponse } from "./types"
 
@@ -12,18 +12,26 @@ type Permission = {
 type ActionFn<T = any> = (args: {
     prevState?: any
     formData?: FormData
-    user: DecodeTokenPayload
+    user: any // Use any for payload flexibility, cast where needed
 }) => Promise<T>
 
 export const withAuth = (fn: ActionFn, requiredPermission?: Permission) => {
     return async (prevState?: any, formData?: FormData) => {
         try {
-            const token = (await cookies()).get("auth-token")?.value
+            const cookieStore = await cookies()
+            const token = cookieStore.get("auth-token")?.value
+
             if (!token) {
                 redirect("/login")
             }
 
-            const decodedToken = decodeJsonWebToken({ token })
+            let decodedToken;
+            try {
+                decodedToken = verifyJsonWebToken({ token })
+            } catch (error: any) {
+                console.error("Token verification failed:", error.message)
+                redirect("/login")
+            }
 
             if (!decodedToken) {
                 redirect("/login")
@@ -31,7 +39,7 @@ export const withAuth = (fn: ActionFn, requiredPermission?: Permission) => {
 
             // Check database permissions if required
             // if (requiredPermission) {
-            //     const userId = (decodedToken as any).id || (decodedToken.data as any)?.id;
+            //     const userId = decodedToken.id || (decodedToken as any).data?.id;
             //     if (!userId) {
             //         console.error("No userId found in token for permission check")
             //         return errorResponse("Authentication failed", 500);
@@ -51,7 +59,7 @@ export const withAuth = (fn: ActionFn, requiredPermission?: Permission) => {
             })
         } catch (error: any) {
             // Re-throw redirect errors so Next.js can handle them
-            if (error.message?.includes("NEXT_REDIRECT")) {
+            if (error.message?.includes("NEXT_REDIRECT") || error.digest?.includes("NEXT_REDIRECT")) {
                 throw error
             }
             console.error("Auth Exception:", error.message)

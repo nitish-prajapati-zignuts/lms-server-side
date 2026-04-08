@@ -84,6 +84,7 @@ export const getDashboardService = async (
 export const getDashboardData = withAuth(async ({ user }): Promise<ResponseState<DashboardResponse>> => {
     try {
         const data = await getDashboardService(user.role as Role, user.id as string);
+        console.log(data)
         return successResponse(data, "Success", 200);
     } catch (error) {
         return errorResponse("Failed to fetch dashboard data", 500);

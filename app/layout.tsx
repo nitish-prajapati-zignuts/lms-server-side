@@ -32,10 +32,14 @@ export default function RootLayout({
       lang="en"
       className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", figtree.variable)}
     >
-      <TooltipProvider>
-        <body className="min-h-full w-full flex flex-col">{children}</body>
+
+      <body className="min-h-full w-full flex flex-col">
+        <TooltipProvider>
+          {children}
+        </TooltipProvider>
         <Toaster />
-      </TooltipProvider>
+      </body>
+
     </html>
   );
 }
