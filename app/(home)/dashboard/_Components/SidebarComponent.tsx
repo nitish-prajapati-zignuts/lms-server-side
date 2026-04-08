@@ -26,6 +26,7 @@ import {
     Library,
     Check,
     Loader2,
+    User,
 } from "lucide-react"
 
 import { useActionState } from "react"
@@ -45,6 +46,7 @@ const data: NavItem[] = [
     { title: "Settings", href: "/settings", icon: Settings },
     { title: "Create a Course", href: "#", icon: Plus, isModalAction: true },
     { title: "Manage Permissions", href: "/permissions", icon: Check },
+    { title: "Adding Role", href: "/roles", icon: User }
 ]
 
 export function SidebarComponent() {
@@ -56,13 +58,14 @@ export function SidebarComponent() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
     const [logoutState, formAction, pending] = useActionState(logout, {
-        success: null,
-        status: null,
+        success: 500,
+        status: false,
+        message: ""
     })
 
-    // Handle logout state changes
+    // Handle logout state changess
     useEffect(() => {
-        if (logoutState?.success === false) {
+        if (logoutState?.status === false) {
             toast.error(logoutState.message || "Failed to logout")
         }
     }, [logoutState])

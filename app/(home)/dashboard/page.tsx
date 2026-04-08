@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default async function Dashboard() {
     const response: ResponseState<DashboardResponse> = await getDashboardData()
+    console.log(response)
 
-
-    if (response.errors) {
+    if (response.success === false) {
         return (
             <div className="min-h-screen items-center justify-center">
                 {response.message}
@@ -123,7 +123,7 @@ export default async function Dashboard() {
                         </Card>
                     </div>
                     <div>
-                        
+
                     </div>
                 </>
             )}

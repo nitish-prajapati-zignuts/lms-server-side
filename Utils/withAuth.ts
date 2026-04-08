@@ -1,69 +1,67 @@
-import { cookies } from "next/headers"
-import { redirect } from "next/navigation"
-import { verifyJsonWebToken } from "./JsonWebToken"
-import { hasPermission } from "./checkPermission"
-import { errorResponse } from "./types"
+"use server";
+
+import { verifyJsonWebToken } from "./JsonWebToken";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { ResponseState } from "./types";
 
 type Permission = {
-    action: string
-    subject: string
-}
+    action: string;
+    subject: string;
+};
 
-type ActionFn<T = any> = (args: {
-    prevState?: any
-    formData?: FormData
-    user: any // Use any for payload flexibility, cast where needed
-}) => Promise<T>
+type ActionFn<T> = (args: {
+    prevState: ResponseState<T> | undefined;
+    formData?: FormData;
+    user: any;
+}) => Promise<ResponseState<T>>;
 
-export const withAuth = (fn: ActionFn, requiredPermission?: Permission) => {
-    return async (prevState?: any, formData?: FormData) => {
+export function withAuth<T>(
+    fn: ActionFn<T>,
+    requiredPermission?: Permission
+) {
+    return async (
+        prevState: ResponseState<T> | undefined,
+        formData?: FormData
+    ): Promise<ResponseState<T>> => {
         try {
-            const cookieStore = await cookies()
-            const token = cookieStore.get("auth-token")?.value
+            const cookieStore = cookies(); // ✅ no await
+            const token = (await cookieStore).get("auth-token")?.value;
 
             if (!token) {
-                redirect("/login")
+                redirect("/login");
             }
 
             let decodedToken;
             try {
-                decodedToken = verifyJsonWebToken({ token })
+                decodedToken = verifyJsonWebToken({ token });
             } catch (error: any) {
-                console.error("Token verification failed:", error.message)
-                redirect("/login")
+                console.error("Token verification failed:", error.message);
+                redirect("/login");
             }
 
             if (!decodedToken) {
-                redirect("/login")
+                redirect("/login");
             }
 
-            // Check database permissions if required
-            // if (requiredPermission) {
-            //     const userId = decodedToken.id || (decodedToken as any).data?.id;
-            //     if (!userId) {
-            //         console.error("No userId found in token for permission check")
-            //         return errorResponse("Authentication failed", 500);
-            //     }
 
-            //     const permitted = await hasPermission(userId, requiredPermission.action, requiredPermission.subject);
-            //     if (!permitted) {
-            //         console.error(`Permission denied: User ${userId} tried ${requiredPermission.action}:${requiredPermission.subject}`)
-            //         return errorResponse("Permission denied", 500);
-            //     }
-            // }
 
             return await fn({
                 prevState,
                 formData,
                 user: decodedToken,
-            })
+            });
+
         } catch (error: any) {
-            // Re-throw redirect errors so Next.js can handle them
-            if (error.message?.includes("NEXT_REDIRECT") || error.digest?.includes("NEXT_REDIRECT")) {
-                throw error
+            if (
+                error.message?.includes("NEXT_REDIRECT") ||
+                error.digest?.includes("NEXT_REDIRECT")
+            ) {
+                throw error;
             }
-            console.error("Auth Exception:", error.message)
-            redirect("/login")
+
+            console.error("Auth Exception:", error.message);
+            redirect("/login");
         }
-    }
+    };
 }

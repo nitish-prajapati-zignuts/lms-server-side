@@ -1,4 +1,3 @@
-"use server"
 
 import prisma from "@/_dbConfig/dbConfig";
 import { errorResponse, ResponseState, successResponse } from "@/Utils/types";
@@ -92,43 +91,50 @@ export const getDashboardData = withAuth(async ({ user }): Promise<ResponseState
 
 }, { action: "view", subject: "dashboard" });
 
-export const logout = withAuth((async ({ user }) => {
-    try {
-        const cookieStore = await cookies()
-        const token = cookieStore.get("auth-token")?.value
 
-        console.log(token)
+
+
+export const logout = withAuth(async ({ user }): Promise<ResponseState> => {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("auth-token")?.value;
+
         if (!token) {
-            redirect("/login")
+            cookieStore.delete("auth-token");
+            redirect("/login");
         }
 
         const session = await prisma.sessions.findFirst({
             where: {
                 userId: user.id,
                 isDeleted: false,
-                token: token
-            }
-        })
+                token: token,
+            },
+        });
 
         if (!session) {
-            return errorResponse("Session not found", 500);
+            cookieStore.delete("auth-token");
+            redirect("/login");
         }
 
         await prisma.sessions.update({
-            where: {
-                id: session.id,
-                token: token
-            }, data: {
-                isDeleted: true
-            }
+            where: { id: session.id },
+            data: { isDeleted: true },
         });
 
         cookieStore.delete("auth-token");
-
-        //return successResponse({}, "Logout Successfully", 200);
+        return {
+            status: 200,
+            success: true,
+            message: "Logged out successfully"
+        }
     } catch (error) {
-        return errorResponse("Failed to logout", 500);
+        console.error("Logout Error:", error);
+        return {
+            status: 500,
+            success: false,
+            message: "Failed to logout"
+        }
     }
 
-    redirect("/login")
-}))
+});

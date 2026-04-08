@@ -21,7 +21,7 @@ export const successResponse = <T>(
 
 export const errorResponse = <T>(
     message: string,
-    status: 500,
+    status: number,
     errors?: Record<string, string[]>
 ): ResponseState<T> => {
     return {
