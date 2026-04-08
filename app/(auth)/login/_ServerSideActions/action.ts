@@ -56,16 +56,9 @@ export async function login(
       };
     }
 
-    const token = generateJsonWebToken({ data: { id: user.id, email: user.email, role: user.role } }) as string
+    console.log(user.id)
 
 
-    (await cookies()).set("auth-token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7,
-      path: "/",
-    })
 
     //Get Sessions
     const countSessions = await prisma.sessions.findMany({
@@ -82,6 +75,16 @@ export async function login(
         message: "You have too many sessions active.Please remove some sessions to continue.",
       };
     }
+
+    const token = generateJsonWebToken({ data: { id: user.id, email: user.email, role: user.role } }) as string
+
+    (await cookies()).set("auth-token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    })
 
     const ipAddress = (await headers()).get("x-forwarded-for") || ""
     const userAgent = (await headers()).get("user-agent") || ""

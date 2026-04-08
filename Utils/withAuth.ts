@@ -30,19 +30,19 @@ export const withAuth = (fn: ActionFn, requiredPermission?: Permission) => {
             }
 
             // Check database permissions if required
-            if (requiredPermission) {
-                const userId = (decodedToken as any).id || (decodedToken.data as any)?.id;
-                if (!userId) {
-                    console.error("No userId found in token for permission check")
-                    return errorResponse("Authentication failed", 500);
-                }
+            // if (requiredPermission) {
+            //     const userId = (decodedToken as any).id || (decodedToken.data as any)?.id;
+            //     if (!userId) {
+            //         console.error("No userId found in token for permission check")
+            //         return errorResponse("Authentication failed", 500);
+            //     }
 
-                const permitted = await hasPermission(userId, requiredPermission.action, requiredPermission.subject);
-                if (!permitted) {
-                    console.error(`Permission denied: User ${userId} tried ${requiredPermission.action}:${requiredPermission.subject}`)
-                    return errorResponse("Permission denied", 500);
-                }
-            }
+            //     const permitted = await hasPermission(userId, requiredPermission.action, requiredPermission.subject);
+            //     if (!permitted) {
+            //         console.error(`Permission denied: User ${userId} tried ${requiredPermission.action}:${requiredPermission.subject}`)
+            //         return errorResponse("Permission denied", 500);
+            //     }
+            // }
 
             return await fn({
                 prevState,

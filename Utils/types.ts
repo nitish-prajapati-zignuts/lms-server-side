@@ -8,8 +8,8 @@ export type ResponseState<T = unknown> = {
 
 export const successResponse = <T>(
     data: T,
-    message: "Success",
-    status: 200
+    message: string,
+    status: number
 ): ResponseState<T> => {
     return {
         success: true,

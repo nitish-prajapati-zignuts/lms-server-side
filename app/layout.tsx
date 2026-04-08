@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Figtree } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 
 const figtree = Figtree({ subsets: ['latin'], variable: '--font-sans' });
 
@@ -33,6 +34,7 @@ export default function RootLayout({
     >
       <TooltipProvider>
         <body className="min-h-full w-full flex flex-col">{children}</body>
+        <Toaster />
       </TooltipProvider>
     </html>
   );

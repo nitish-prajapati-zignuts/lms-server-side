@@ -1,6 +1,10 @@
+"use server"
+
 import prisma from "@/_dbConfig/dbConfig";
 import { errorResponse, ResponseState, successResponse } from "@/Utils/types";
 import { withAuth } from "@/Utils/withAuth";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export type Role = "ADMIN" | "USER";
 
@@ -86,3 +90,44 @@ export const getDashboardData = withAuth(async ({ user }): Promise<ResponseState
     }
 
 }, { action: "view", subject: "dashboard" });
+
+export const logout = withAuth((async ({ user }) => {
+    try {
+        const cookieStore = await cookies()
+        const token = cookieStore.get("auth-token")?.value
+
+        console.log(token)
+        if (!token) {
+            redirect("/login")
+        }
+
+        const session = await prisma.sessions.findFirst({
+            where: {
+                userId: user.id,
+                isDeleted: false,
+                token: token
+            }
+        })
+
+        if (!session) {
+            return errorResponse("Session not found", 500);
+        }
+
+        await prisma.sessions.update({
+            where: {
+                id: session.id,
+                token: token
+            }, data: {
+                isDeleted: true
+            }
+        });
+
+        cookieStore.delete("auth-token");
+
+        //return successResponse({}, "Logout Successfully", 200);
+    } catch (error) {
+        return errorResponse("Failed to logout", 500);
+    }
+
+    redirect("/login")
+}))

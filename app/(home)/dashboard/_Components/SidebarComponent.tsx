@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { redirect, usePathname } from "next/navigation"
 
 import {
     Sidebar,
@@ -14,7 +14,11 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 
-import { Home, Users, Settings, LogOut, LucideIcon, Plus, Library, Check } from "lucide-react"
+import { Home, Users, Settings, LogOut, LucideIcon, Plus, Library, Check, Loader2 } from "lucide-react"
+import { useActionState, useEffect } from "react"
+import { logout } from "../_ServerActions/action"
+import { successResponse } from "@/Utils/types"
+import { toast } from "sonner"
 
 type NavItem = {
     title: string
@@ -35,9 +39,28 @@ export function SidebarComponent() {
     const { state, isMobile } = useSidebar()
     const isCollapsed = state === "collapsed"
 
+    const [logutState, formAction, pending] = useActionState(logout, {
+        success: null,
+        status: null,
+    })
+
+    useEffect(() => {
+        if (logutState?.success === false) {
+            toast.success("Successfully logout")
+            redirect("/login")
+        }
+    }, [logutState?.success])
+
+    useEffect(() => {
+        if (logutState?.status && logutState.status !== 200) {
+            toast.error(logutState.message)
+        }
+    }, [logutState?.status])
+
+
+
     return (
         <Sidebar collapsible="icon" variant="floating">
-            {/* Header */}
             <SidebarHeader>
                 <div className="flex items-center gap-2">
                     <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -87,10 +110,19 @@ export function SidebarComponent() {
 
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton className="text-destructive hover:text-destructive active:text-destructive">
-                            <LogOut className="h-4 w-4" />
-                            {!isCollapsed && <span>Logout</span>}
-                        </SidebarMenuButton>
+                        <form action={formAction}>
+                            <SidebarMenuButton
+                                type="submit"
+                                className="text-destructive hover:text-destructive active:text-destructive w-full"
+                            >
+                                {pending ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <LogOut className="h-4 w-4" />
+                                )}
+                                {!isCollapsed && <span>Logout</span>}
+                            </SidebarMenuButton>
+                        </form>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>
