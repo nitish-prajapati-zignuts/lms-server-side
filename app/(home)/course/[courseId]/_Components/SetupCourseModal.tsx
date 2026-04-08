@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -13,54 +13,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createCourse } from "../../course/_ServerActions/action";
-import { updateCourse } from "../../course/[courseId]/_ServerActions/action";
+import { updateCourse } from "./../_ServerActions/action";
 
-interface CreateCourseModalProps {
+interface SetupCourseModalProps {
   isOpen: boolean;
   onClose: () => void;
+  courseId: string;
 }
 
-export function CreateCourseModal({ isOpen, onClose }: CreateCourseModalProps) {
+export function SetupCourseModal({ isOpen, onClose, courseId }: SetupCourseModalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-
-  // courseId is pre-generated as soon as the modal opens
-  const [courseId, setCourseId] = useState<string | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Track whether we've already initialized for the current open session
-  const initializedRef = useRef(false);
-
-  // ── Step 1: Create empty course when modal opens ─────────────────────────
-  useEffect(() => {
-    if (isOpen && !initializedRef.current) {
-      initializedRef.current = true;
-      setIsInitializing(true);
-      setErrorMessage(null);
-
-      startTransition(async () => {
-        const result = await createCourse(undefined, undefined);
-        setIsInitializing(false);
-
-        if (result?.success && result?.data) {
-          setCourseId(result.data);
-        } else {
-          setErrorMessage(result?.message || "Failed to initialize course. Please try again.");
-        }
-      });
-    }
-
-    // Reset state when modal closes
-    if (!isOpen) {
-      setCourseId(null);
-      setErrorMessage(null);
-      initializedRef.current = false;
-    }
-  }, [isOpen]);
-
-  // ── Step 2: On submit, update the pre-created course with form values ────
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!courseId) return;
@@ -74,21 +39,21 @@ export function CreateCourseModal({ isOpen, onClose }: CreateCourseModalProps) {
 
       if (result?.success) {
         onClose();
-        router.push(`/course/${courseId}`);
+        router.refresh(); // Refresh to update title layout
       } else {
         setErrorMessage(result?.message || "Something went wrong.");
       }
     });
   };
 
-  const isLoading = isPending || isInitializing;
+  const isLoading = isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Create a new course</DialogTitle>
+            <DialogTitle>Setup your course</DialogTitle>
             <DialogDescription>
               Provide the initial details for your new course to get started.
             </DialogDescription>
@@ -152,11 +117,7 @@ export function CreateCourseModal({ isOpen, onClose }: CreateCourseModalProps) {
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !courseId}>
-              {isInitializing
-                ? "Preparing..."
-                : isPending
-                  ? "Creating..."
-                  : "Continue"}
+              {isPending ? "Saving..." : "Save Details"}
             </Button>
           </DialogFooter>
         </form>

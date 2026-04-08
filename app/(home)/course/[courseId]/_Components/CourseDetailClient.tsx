@@ -20,6 +20,7 @@ const Editor = dynamic(() => import('@tinymce/tinymce-react').then(mod => mod.Ed
 });
 
 import { createModule, updateModule, deleteModule } from "../_ServerActions/action";
+import { SetupCourseModal } from "./SetupCourseModal";
 
 type Module = {
   id: string;
@@ -67,6 +68,7 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
     modules.length > 0 ? modules[0].id : null
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [isSetupModalOpen, setIsSetupModalOpen] = useState(!course.title);
 
   const duration = course.duration != null ? formatDuration(course.duration) : null;
   const activeModule = modules.find((m) => m.id === activeModuleId);
@@ -75,7 +77,7 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
     setIsSaving(true);
     const formData = new FormData();
     formData.append("courseId", course.id);
-    const result = await createModule(course.id, undefined, formData);
+    const result = await createModule(undefined, formData);
     if (result && result.success && result.data) {
       const newModule = result.data as Module;
       setModules([...modules, newModule]);
@@ -88,7 +90,7 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
     if (!confirm("Are you sure you want to delete this module?")) return;
     const formData = new FormData();
     formData.append("moduleId", id);
-    const result = await deleteModule(id, undefined, formData);
+    const result = await deleteModule(undefined, formData);
     if (result && result.success) {
       const updatedModules = modules.filter((m) => m.id !== id);
       setModules(updatedModules);
@@ -126,7 +128,7 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
     formData.append("content", activeModule.content || "");
     formData.append("title", activeModule.title || "");
 
-    const result = await updateModule(activeModuleId, undefined, formData);
+    const result = await updateModule(undefined, formData);
     setIsSaving(false);
   };
 
@@ -135,10 +137,20 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
       {/* Course Header */}
       <div className="bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
         <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-extrabold text-stone-800 leading-tight">
-              {course.title ?? <span className="italic text-stone-400">Untitled Course</span>}
-            </h1>
+          <div className="space-y-4 flex-1">
+            <div className="flex items-center justify-between">
+              <h1 className="text-4xl font-extrabold text-stone-800 leading-tight">
+                {course.title ?? <span className="italic text-stone-400">Untitled Course</span>}
+              </h1>
+              <Button 
+                onClick={() => setIsSetupModalOpen(true)}
+                variant="outline" 
+                className="rounded-xl border-stone-200"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit Details
+              </Button>
+            </div>
 
             <div className="flex flex-wrap gap-4">
               <div className="flex items-center gap-2.5 bg-stone-50 border border-stone-100 rounded-2xl px-4 py-2.5">
@@ -304,6 +316,12 @@ export default function CourseDetailClient({ course, initialModules }: CourseDet
           )}
         </div>
       </div>
+
+      <SetupCourseModal 
+        isOpen={isSetupModalOpen} 
+        onClose={() => setIsSetupModalOpen(false)} 
+        courseId={course.id} 
+      />
     </div>
   );
 }

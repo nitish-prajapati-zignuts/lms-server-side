@@ -1,29 +1,19 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { decodeJsonWebToken } from "@/Utils/JsonWebToken";
 import prisma from "@/_dbConfig/dbConfig";
+import { withAuth } from "@/Utils/withAuth";
+import { ResponseState } from "@/Utils/types";
 
-export async function updateCourse(
-    courseId: string,
-    prevState: any,
-    formData: FormData
-): Promise<any> {
-    const token = (await cookies()).get("auth-token")?.value;
-    if (!token) redirect("/login");
-
-    const user = decodeJsonWebToken({ token });
-    if (!user) redirect("/login");
-
+export const updateCourse = withAuth(async ({ prevState, formData, user }): Promise<ResponseState> => {
     try {
         if (!formData) {
             return { status: 400, success: false, message: "No form data provided" };
         }
 
-    if (!courseId) {
-      return { status: 400, success: false, message: "Course ID is required" };
-    }
+        const courseId = formData.get("courseId") as string;
+        if (!courseId) {
+            return { status: 400, success: false, message: "Course ID is required" };
+        }
 
         const title       = formData.get("title") as string;
         const description = (formData.get("description") as string) || null;
@@ -38,29 +28,25 @@ export async function updateCourse(
         const course = await prisma.course.update({
             where: { id: courseId },
             data: { title, description, duration, image },
-    });
+        });
 
-    return { 
-      status: 200,
-      success: true, 
+        return { 
+            status: 200,
+            success: true, 
             message: "Course updated successfully!",
-            course,
-        courseId,
-    };
-  } catch (error) {
+            data: { course, courseId }
+        };
+    } catch (error) {
         console.error(error);
         return { status: 500, success: false, message: "Something went wrong!" };
     }
-}
+});
 
-export async function getModules(courseId: string): Promise<any> {
-    const token = (await cookies()).get("auth-token")?.value;
-    if (!token) redirect("/login");
-
-    const user = decodeJsonWebToken({ token });
-    if (!user) redirect("/login");
-
+export const getModules = withAuth(async ({ prevState, formData, user }): Promise<ResponseState> => {
     try {
+        const courseId = formData?.get("courseId") as string;
+        if (!courseId) return { status: 400, success: false, message: "No courseId provided" };
+
         const modules = await prisma.module.findMany({
             where: {
                 courseId,
@@ -79,20 +65,15 @@ export async function getModules(courseId: string): Promise<any> {
         console.error(error);
         return { status: 500, success: false, message: "Failed to fetch modules" };
     }
-}
+});
 
-export async function createModule(
-    courseId: string,
-    prevState: any,
-    formData: FormData
-): Promise<any> {
-    const token = (await cookies()).get("auth-token")?.value;
-    if (!token) redirect("/login");
-
-    const user = decodeJsonWebToken({ token });
-    if (!user) redirect("/login");
-
+export const createModule = withAuth(async ({ prevState, formData, user }): Promise<ResponseState> => {
     try {
+        const courseId = formData?.get("courseId") as string;
+        if (!courseId) {
+            return { status: 400, success: false, message: "Course ID is required" };
+        }
+
         const moduleCount = await prisma.module.count({
             where: { courseId, isDeleted: false }
         });
@@ -116,22 +97,17 @@ export async function createModule(
         console.error(error);
         return { status: 500, success: false, message: "Failed to create module" };
     }
-}
+});
 
-export async function updateModule(
-    moduleId: string,
-    prevState: any,
-    formData: FormData
-): Promise<any> {
-    const token = (await cookies()).get("auth-token")?.value;
-    if (!token) redirect("/login");
-
-    const user = decodeJsonWebToken({ token });
-    if (!user) redirect("/login");
-
+export const updateModule = withAuth(async ({ prevState, formData, user }): Promise<ResponseState> => {
     try {
-        const title = formData.get("title") as string;
-        const content = formData.get("content") as string;
+        const moduleId = formData?.get("moduleId") as string;
+        if (!moduleId) {
+            return { status: 400, success: false, message: "Module ID is required" };
+        }
+
+        const title = formData?.get("title") as string;
+        const content = formData?.get("content") as string;
 
         const updatedModule = await prisma.module.update({
             where: { id: moduleId },
@@ -148,20 +124,15 @@ export async function updateModule(
         console.error(error);
         return { status: 500, success: false, message: "Failed to update module" };
     }
-}
+});
 
-export async function deleteModule(
-    moduleId: string,
-    prevState: any,
-    formData: FormData
-): Promise<any> {
-    const token = (await cookies()).get("auth-token")?.value;
-    if (!token) redirect("/login");
-
-    const user = decodeJsonWebToken({ token });
-    if (!user) redirect("/login");
-
+export const deleteModule = withAuth(async ({ prevState, formData, user }): Promise<ResponseState> => {
     try {
+        const moduleId = formData?.get("moduleId") as string;
+        if (!moduleId) {
+            return { status: 400, success: false, message: "Module ID is required" };
+        }
+
         const deletedModule = await prisma.module.update({
             where: { id: moduleId },
             data: { isDeleted: true }
@@ -177,4 +148,4 @@ export async function deleteModule(
         console.error(error);
         return { status: 500, success: false, message: "Failed to delete module" };
     }
-}
+});

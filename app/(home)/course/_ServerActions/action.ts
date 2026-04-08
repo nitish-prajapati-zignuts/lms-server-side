@@ -15,7 +15,7 @@ export const createCourse = withAuth(async ({ prevState, formData, user }): Prom
             status: 200,
             success: true,
             message: "Course created successfully",
-            courseId: course.id,
+            data: course.id,
         };
     } catch (error) {
         console.error(error);

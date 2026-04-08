@@ -1,9 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useTransition } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { CreateCourseModal } from "./CreateCourseModal"
+import { usePathname, useRouter } from "next/navigation"
 
 import {
     Sidebar,
@@ -17,6 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 
 import { Home, Users, Settings, LogOut, LucideIcon, Plus, Library } from "lucide-react"
+import { createCourse } from "../../course/_ServerActions/action"
 
 type NavItem = {
     title: string
@@ -34,9 +34,19 @@ const data: NavItem[] = [
 
 export function SidebarComponent() {
     const pathname = usePathname()
+    const router = useRouter()
     const { state, isMobile } = useSidebar()
     const isCollapsed = state === "collapsed"
-    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+    const [isPending, startTransition] = useTransition()
+
+    const handleCreateCourse = () => {
+        startTransition(async () => {
+            const result = await createCourse(undefined, undefined)
+            if (result?.success && result?.data) {
+                router.push(`/course/${result.data}`)
+            }
+        })
+    }
 
     return (
         <>
@@ -68,11 +78,12 @@ export function SidebarComponent() {
                                     {item.isModalAction ? (
                                         <SidebarMenuButton
                                             isActive={isActive}
-                                            onClick={() => setIsCreateModalOpen(true)}
+                                            onClick={handleCreateCourse}
                                             className="w-full flex items-center"
+                                            disabled={isPending}
                                         >
                                             <Icon className="mr-2 h-4 w-4" />
-                                            {item.title}
+                                            {isPending ? "Creating..." : item.title}
                                         </SidebarMenuButton>
                                     ) : (
                                         <SidebarMenuButton
@@ -110,11 +121,6 @@ export function SidebarComponent() {
                     </SidebarMenu>
                 </SidebarFooter>
             </Sidebar>
-
-            <CreateCourseModal
-                isOpen={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-            />
         </>
     )
 }
